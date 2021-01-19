@@ -1,0 +1,8 @@
+<launch>
+
+    <!-- Load the parameters for the algorithm -->
+    <rosparam command="load" file="$(find turtlebot3_training)/config/qlearn_params.yaml" />
+
+    <!-- Launch the training system -->
+    <node pkg="turtlebot3_training" name="turtlebot3_gym" type="start_training.py" output="screen"/>
+</launch>

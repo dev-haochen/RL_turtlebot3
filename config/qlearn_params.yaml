@@ -1,0 +1,15 @@
+# Algortihm Parameters
+alpha: 0.1
+gamma: 0.8
+epsilon: 0.9
+epsilon_discount: 0.999 # 1098 eps to reach 0.1
+nepisodes: 10000
+nsteps: 1000
+
+# Environment Parameters
+desired_pose:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+done_reward: -1000.0 # reward
+alive_reward: 100.0 # reward
