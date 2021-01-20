@@ -22,14 +22,6 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Pose
 
-# register the training enviroment in the gym as an available one
-reg = register(
-    id = 'Burger-v0',
-    entry_point = "utils.turtle_env:TurtleBot3Env",
-    max_episode_steps = 1000, 
-)
-
-
 class TurtleBot3Env(RobotGazeboEnv):
     """Superclass for all CubeSingleDisk environments.
     """

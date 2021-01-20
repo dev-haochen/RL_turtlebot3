@@ -1,19 +1,22 @@
 #!/usr/bin/env python
 
 import rospy
+import time
 from controller_manager_msgs.srv import SwitchController, SwitchControllerRequest, SwitchControllerResponse
 
-
 class ControllersConnection():
+    
+    def __init__(self, namespace, controllers_list):
 
-    def __init__(self, namespace):
-
-        self.switch_service_name = '/' + namespace + '/controller_manager/switch_controller'
+        rospy.logwarn("Start Init ControllersConnection")
+        self.controllers_list = controllers_list
+        self.switch_service_name = '/'+namespace+'/controller_manager/switch_controller'
         self.switch_service = rospy.ServiceProxy(self.switch_service_name, SwitchController)
+        rospy.logwarn("END Init ControllersConnection")
 
     def switch_controllers(self, controllers_on, controllers_off, strictness=1):
         """
-        Give the controllers you wan to switch on or off.
+        Give the controllers you want to switch on or off.
         :param controllers_on: ["name_controler_1", "name_controller2",...,"name_controller_n"]
         :param controllers_off: ["name_controler_1", "name_controller2",...,"name_controller_n"]
         :return:
@@ -37,16 +40,16 @@ class ControllersConnection():
             ---
             bool ok
             """
-            rospy.logdebug("Switch Result==>" + str(switch_result.ok))
+            rospy.logdebug("Switch Result==>"+str(switch_result.ok))
 
             return switch_result.ok
 
         except rospy.ServiceException as e:
-            print(self.switch_service_name + " service call failed")
+            print (self.switch_service_name+" service call failed")
 
             return None
 
-    def reset_controllers(self, controllers_reset):
+    def reset_controllers(self):
         """
         We turn on and off the given controllers
         :param controllers_reset: ["name_controler_1", "name_controller2",...,"name_controller_n"]
@@ -54,14 +57,17 @@ class ControllersConnection():
         """
         reset_result = False
 
-        result_off_ok = self.switch_controllers(controllers_on=[],
-                                                controllers_off=controllers_reset)
+        result_off_ok = self.switch_controllers(controllers_on = [],
+                                controllers_off = self.controllers_list)
+
+        rospy.logdebug("Deactivated Controlers")
 
         if result_off_ok:
-            result_on_ok = self.switch_controllers(controllers_on=controllers_reset,
-                                                   controllers_off=[])
+            rospy.logdebug("Activating Controlers")
+            result_on_ok = self.switch_controllers(controllers_on=self.controllers_list,
+                                                    controllers_off=[])
             if result_on_ok:
-                rospy.logdebug("Controllers Reseted==>" + str(controllers_reset))
+                rospy.logdebug("Controllers Reseted==>"+str(self.controllers_list))
                 reset_result = True
             else:
                 rospy.logdebug("result_on_ok==>" + str(result_on_ok))
@@ -70,9 +76,6 @@ class ControllersConnection():
 
         return reset_result
 
-    def reset_monoped_joint_controllers(self):
-        controllers_reset = ['joint_state_controller',
-                             'haa_joint_position_controller',
-                             'hfe_joint_position_controller',
-                             'kfe_joint_position_controller']
-        self.reset_controllers(controllers_reset)
+    def update_controllers_list(self, new_controllers_list):
+
+        self.controllers_list = new_controllers_list

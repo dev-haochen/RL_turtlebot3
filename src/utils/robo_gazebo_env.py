@@ -4,7 +4,7 @@ from gym.utils import seeding
 from .gazebo_connection import GazeboConnection
 from .controllers_connection import ControllersConnection
 #https://bitbucket.org/theconstructcore/theconstruct_msgs/src/master/msg/RLExperimentInfo.msg
-from std_msgs.msg import Int32, Float32
+from turtlebot3_training.msg import RLExperimentInfo
 
 # https://github.com/openai/gym/blob/master/gym/core.py
 class RobotGazeboEnv(gym.Env):
@@ -21,8 +21,7 @@ class RobotGazeboEnv(gym.Env):
         # Set up ROS related variables
         self.episode_num = 0
         self.cumulated_episode_reward = 0
-        self.episode_num_pub = rospy.Publisher('/episode/number', Int32 , queue_size=1)
-        self.episode_reward_pub = rospy.Publisher('/episode/reward', Float32 , queue_size=1)
+        self.reward_pub = rospy.Publisher('/openai/reward', RLExperimentInfo, queue_size=1)
         rospy.logdebug("END init RobotGazeboEnv")
 
     # Env methods

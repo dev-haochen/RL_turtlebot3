@@ -23,6 +23,7 @@ class QLearn:
             self.q[(state, action)] = oldv + self.alpha * (value - oldv)
 
     def chooseAction(self, state, return_q=False):
+        print("DEBUG: actions={}".format(self.actions))
         q = [self.getQ(state, a) for a in self.actions]
         maxQ = max(q)
 

@@ -17,17 +17,16 @@ from std_msgs.msg import Float64
 import rospy
 import rospkg
 # import our training environment
-from utils.turtle_env import TurtleBot3Env
+from utils.turtle_world_env import TurtleBot3WorldEnv
 
 if __name__ == "__main__":
     
-    rospy.init_node('turtlebot3_gym', anonymous=True, log_level=rospy.INFO)
+    rospy.init_node('turtlebot3_gym', anonymous=True, log_level=rospy.DEBUG)
 
     # Create the Gym environment
-    env = gym.make('Burger-v0')
+    env = gym.make('TurtleBot3World-v0')
+    print(str(env))
     rospy.logdebug("Gym environment done")
-    reward_pub = rospy.Publisher('/burger/reward', Float64, queue_size=1)
-    episode_reward_pub = rospy.Publisher('/burger/episode_reward', Float64, queue_size=1)
 
     # Set the logging system
     rospack = rospkg.RosPack()
@@ -61,8 +60,6 @@ if __name__ == "__main__":
         rospy.loginfo("STARTING Episode #" + str(x))
 
         cumulated_reward = 0
-        cumulated_reward_msg = Float64()
-        episode_reward_msg = Float64()
         done = False
         if qlearn.epsilon > 0.05:
             qlearn.epsilon *= epsilon_discount
@@ -70,7 +67,8 @@ if __name__ == "__main__":
         # Initialize the environment and get first state of the robot
         rospy.logdebug("env.reset...")
         # Now We return directly the stringuified observations called state
-        state = env.reset()
+        observation = env.reset()
+        state = ''.join(map(str, observation))
 
         rospy.logdebug("env.get_state...==>" + str(state))
 

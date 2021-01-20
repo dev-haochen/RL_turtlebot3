@@ -85,7 +85,7 @@ class GazeboConnection():
         systems.
         """
         if self.reset_world_or_sim == "SIMULATION":
-            rospy.logdebug("SIMULATION RESET")
+            rospy.logdebug("[{}] SIMULATION RESET".format(__name__))
             self.resetSimulation()
         elif self.reset_world_or_sim == "WORLD":
             rospy.logdebug("WORLD RESET")
