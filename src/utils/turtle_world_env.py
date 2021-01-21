@@ -56,6 +56,7 @@ class TurtleBot3WorldEnv(TurtleBot3Env):
         self.max_laser_value = rospy.get_param('/max_laser_value')
         self.min_laser_value = rospy.get_param('/min_laser_value')
         self.max_linear_aceleration = rospy.get_param('/max_linear_aceleration')
+        self.running_time = rospy.get_param('/running_time')
         
         
         # We create two arrays based on the binary values that will be assigned
@@ -86,6 +87,7 @@ class TurtleBot3WorldEnv(TurtleBot3Env):
         """
         self.move_base( self.init_linear_forward_speed,
                         self.init_linear_turn_speed,
+                        running_time=self.running_time,
                         epsilon=0.05,
                         update_rate=10)
 
@@ -160,7 +162,9 @@ class TurtleBot3WorldEnv(TurtleBot3Env):
             
         # Now we check if it has crashed based on the imu
         imu_data = self.get_imu()
+        rospy.logdebug("linear_acceleration ==>"+str(imu_data.linear_acceleration))
         linear_acceleration_magnitude = self.get_vector_magnitude(imu_data.linear_acceleration)
+        rospy.logdebug("linear_acceleration_magnitude ==>"+str(linear_acceleration_magnitude))
         if linear_acceleration_magnitude > self.max_linear_aceleration:
             rospy.logerr("TurtleBot2 Crashed==>"+str(linear_acceleration_magnitude)+">"+str(self.max_linear_aceleration))
             self._episode_done = True
@@ -200,7 +204,8 @@ class TurtleBot3WorldEnv(TurtleBot3Env):
         self._episode_done = False
         
         discretized_ranges = []
-        mod = len(data.ranges)/new_ranges
+        #mod = len(data.ranges)/new_ranges
+        mod = new_ranges
         
         rospy.logdebug("data=" + str(data))
         rospy.logdebug("new_ranges=" + str(new_ranges))
@@ -213,14 +218,13 @@ class TurtleBot3WorldEnv(TurtleBot3Env):
                 elif numpy.isnan(item):
                     discretized_ranges.append(self.min_laser_value)
                 else:
-                    discretized_ranges.append(int(item))
+                    discretized_ranges.append(round(item, 1))
                     
                 if (self.min_range > item > 0):
                     rospy.logerr("done Validation >>> item=" + str(item)+"< "+str(self.min_range))
                     self._episode_done = True
                 else:
-                    rospy.logdebug("NOT done Validation >>> item=" + str(item)+"< "+str(self.min_range))
-                    
+                    rospy.logdebug("NOT done Validation >>> item=" + str(item)+ " ("+str(i) +") < "+str(self.min_range))
 
         return discretized_ranges
         

@@ -112,7 +112,8 @@ class GazeboConnection():
     def init_values(self):
 
         self.resetSim()
-
+        rospy.logdebug("[{}] Here the simulation physics parameters: {}".format(__name__, str(self.start_init_physics_parameters)))
+        
         if self.start_init_physics_parameters:
             rospy.logdebug("Initialising Simulation Physics Parameters")
             self.init_physics_parameters()

@@ -25,7 +25,6 @@ if __name__ == "__main__":
 
     # Create the Gym environment
     env = gym.make('TurtleBot3World-v0')
-    print(str(env))
     rospy.logdebug("Gym environment done")
 
     # Set the logging system
@@ -57,7 +56,7 @@ if __name__ == "__main__":
 
     # Starts the main training loop: the one about the episodes to do
     for x in range(nepisodes):
-        rospy.loginfo("STARTING Episode #" + str(x))
+        rospy.loginfo("############### START EPISODE=>" + str(x))
 
         cumulated_reward = 0
         done = False
@@ -69,36 +68,32 @@ if __name__ == "__main__":
         # Now We return directly the stringuified observations called state
         observation = env.reset()
         state = ''.join(map(str, observation))
-
         rospy.logdebug("env.get_state...==>" + str(state))
 
         # for each episode, we test the robot for nsteps
         for i in range(nsteps):
+            rospy.logdebug("###################### Start Step...[" + str(i) + "]")
 
             # Pick an action based on the current state
             action = qlearn.chooseAction(state)
 
             # Execute the action in the environment and get feedback
-            rospy.logdebug("###################### Start Step...[" + str(i) + "]")
-            rospy.logdebug("To be defined >> [ ... ]")
             rospy.logdebug("Action to Perform >> " + str(action))
-            nextState, reward, done, info = env.step(action)
+            observation, reward, done, info = env.step(action)
             rospy.logdebug("END Step...")
             rospy.logdebug("Reward ==> " + str(reward))
             cumulated_reward += reward
             if highest_reward < cumulated_reward:
                 highest_reward = cumulated_reward
-
-            rospy.logdebug(
-                "env.get_state...[ to be defined ]==>" + str(
-                    nextState))
+            nextState = ''.join(map(str, observation))
 
             # Make the algorithm learn based on the results
+            rospy.logdebug("# state we were=>" + str(state))
+            rospy.logdebug("# action that we took=>" + str(action))
+            rospy.logdebug("# reward that action gave=>" + str(reward))
+            rospy.logdebug("# episode cumulated_reward=>" + str(cumulated_reward))
+            rospy.logdebug("# State in which we will start next step=>" + str(nextState))
             qlearn.learn(state, action, reward, nextState)
-
-            # We publish the cumulated reward
-            cumulated_reward_msg.data = cumulated_reward
-            reward_pub.publish(cumulated_reward_msg)
 
             if not (done):
                 state = nextState

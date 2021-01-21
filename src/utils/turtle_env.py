@@ -213,7 +213,7 @@ class TurtleBot3Env(RobotGazeboEnv):
         
     # Methods that the TrainingEnvironment will need.
     # ----------------------------
-    def move_base(self, linear_speed, angular_speed, epsilon=0.05, update_rate=10):
+    def move_base(self, linear_speed, angular_speed, running_time=None, epsilon=0.05, update_rate=10):
         """
         It will move the base based on the linear and angular speeds given.
         It will wait untill those twists are achived reading from the odometry topic.
@@ -229,10 +229,19 @@ class TurtleBot3Env(RobotGazeboEnv):
         rospy.logdebug("TurtleBot3 Base Twist Cmd>>" + str(cmd_vel_value))
         self._check_publishers_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
-        self.wait_until_twist_achieved(cmd_vel_value,
-                                        epsilon,
-                                        update_rate)
-    
+        if running_time:
+            self.wait_until_timeout(running_time, update_rate)
+        else:
+            self.wait_until_twist_achieved(cmd_vel_value,
+                                            epsilon,
+                                            update_rate)
+
+    def wait_until_timeout(self, running_time, update_rate):
+        start_wait_time = rospy.get_rostime().to_sec()
+        rate = rospy.Rate(update_rate)
+        while (not rospy.is_shutdown) and (not rospy.get_rostime().to_sec() - start_wait_time > running_time):
+            rate.sleep
+
     def wait_until_twist_achieved(self, cmd_vel_value, epsilon, update_rate):
         """
         We wait for the cmd_vel twist given to be reached by the robot reading
@@ -262,9 +271,8 @@ class TurtleBot3Env(RobotGazeboEnv):
         
         while not rospy.is_shutdown():
             current_odometry = self._check_odom_ready()
-            # IN turtlebot3 the odometry angular readings are inverted, so we have to invert the sign.
             odom_linear_vel = current_odometry.twist.twist.linear.x
-            odom_angular_vel = -1*current_odometry.twist.twist.angular.z
+            odom_angular_vel = current_odometry.twist.twist.angular.z
             
             rospy.logdebug("Linear VEL=" + str(odom_linear_vel) + ", ?RANGE=[" + str(linear_speed_minus) + ","+str(linear_speed_plus)+"]")
             rospy.logdebug("Angular VEL=" + str(odom_angular_vel) + ", ?RANGE=[" + str(angular_speed_minus) + ","+str(angular_speed_plus)+"]")
