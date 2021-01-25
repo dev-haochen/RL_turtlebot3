@@ -237,9 +237,10 @@ class TurtleBot3Env(RobotGazeboEnv):
                                             update_rate)
 
     def wait_until_timeout(self, running_time, update_rate):
+        rospy.logdebug("Running time>>" + str(running_time))
         start_wait_time = rospy.get_rostime().to_sec()
         rate = rospy.Rate(update_rate)
-        while (not rospy.is_shutdown) and (not rospy.get_rostime().to_sec() - start_wait_time > running_time):
+        while (not rospy.is_shutdown()) and (not rospy.get_rostime().to_sec() - start_wait_time > running_time):
             rate.sleep
 
     def wait_until_twist_achieved(self, cmd_vel_value, epsilon, update_rate):

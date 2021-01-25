@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # Loads parameters from the ROS param server
     # Parameters are stored in a yaml file inside the config directory
     # They are loaded at runtime by the launch file
-    Alpha = rospy.get_param("/alpha")
+    Lr = rospy.get_param("/learning_rate")
     Epsilon = rospy.get_param("/epsilon")
     Gamma = rospy.get_param("/gamma")
     epsilon_discount = rospy.get_param("/epsilon_discount")
@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     # Initialises the algorithm that we are going to use for learning
     qlearn = QLearn(actions=range(env.action_space.n),
-                    alpha=Alpha, gamma=Gamma, epsilon=Epsilon)
+                    alpha=Lr, gamma=Gamma, epsilon=Epsilon)
     initial_epsilon = qlearn.epsilon
 
     start_time = time.time()
@@ -106,8 +106,6 @@ if __name__ == "__main__":
 
         m, s = divmod(int(time.time() - start_time), 60)
         h, m = divmod(m, 60)
-        episode_reward_msg.data = cumulated_reward
-        episode_reward_pub.publish(episode_reward_msg)
         rospy.loginfo(("EP: " + str(x + 1) + " - [alpha: " + str(round(qlearn.alpha, 2)) + " - gamma: " + str(
             round(qlearn.gamma, 2)) + " - epsilon: " + str(round(qlearn.epsilon, 2)) + "] - Reward: " + str(
             cumulated_reward) + "     Time: %d:%02d:%02d" % (h, m, s)))

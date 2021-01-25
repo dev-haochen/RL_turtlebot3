@@ -129,7 +129,7 @@ class TurtleBot3WorldEnv(TurtleBot3Env):
             self.last_action = "TURN_RIGHT"
         
         # We tell TurtleBot2 the linear and angular speed to set to execute
-        self.move_base(linear_speed, angular_speed, epsilon=0.05, update_rate=10)
+        self.move_base(linear_speed, angular_speed, running_time=self.running_time, epsilon=0.05, update_rate=10)
         
         rospy.logdebug("END Set Action ==>"+str(action))
 
@@ -155,8 +155,9 @@ class TurtleBot3WorldEnv(TurtleBot3Env):
 
     def _is_done(self, observations):
         
-        if self._episode_done:
+        if self.min_range > min(observations) > 0:
             rospy.logerr("TurtleBot2 is Too Close to wall==>")
+            self._episode_done = True
         else:
             rospy.logwarn("TurtleBot2 is NOT close to a wall ==>")
             
@@ -204,27 +205,41 @@ class TurtleBot3WorldEnv(TurtleBot3Env):
         self._episode_done = False
         
         discretized_ranges = []
-        #mod = len(data.ranges)/new_ranges
-        mod = new_ranges
-        
-        rospy.logdebug("data=" + str(data))
+        mod = len(data.ranges)/new_ranges
+        #mod = new_ranges
+                
+        #rospy.logdebug("data=" + str(data.ranges))
         rospy.logdebug("new_ranges=" + str(new_ranges))
         rospy.logdebug("mod=" + str(mod))
-        
-        for i, item in enumerate(data.ranges):
-            if (i%mod==0):
-                if item == float ('Inf') or numpy.isinf(item):
-                    discretized_ranges.append(self.max_laser_value)
+
+        for i in range(int(mod)):
+            n_low = i*new_ranges
+            n_high = (i+1)*new_ranges
+            batch = []        
+            for item in data.ranges[n_low: n_high]:
+                if numpy.isinf(item):
+                    batch.append(self.max_laser_value)
                 elif numpy.isnan(item):
-                    discretized_ranges.append(self.min_laser_value)
+                    batch.append(self.min_laser_value)
                 else:
-                    discretized_ranges.append(round(item, 1))
+                    batch.append(item)
+            
+            discretized_ranges.append(round(min(batch), 1))
+
+        # for i, item in enumerate(data.ranges):
+        #     if (i%mod==0):
+        #         if item == float ('Inf') or numpy.isinf(item):
+        #             discretized_ranges.append(self.max_laser_value)
+        #         elif numpy.isnan(item):
+        #             discretized_ranges.append(self.min_laser_value)
+        #         else:
+        #             discretized_ranges.append(round(item, 1))
                     
-                if (self.min_range > item > 0):
-                    rospy.logerr("done Validation >>> item=" + str(item)+"< "+str(self.min_range))
-                    self._episode_done = True
-                else:
-                    rospy.logdebug("NOT done Validation >>> item=" + str(item)+ " ("+str(i) +") < "+str(self.min_range))
+        #         if (self.min_range > item > 0):
+        #             rospy.logerr("done Validation >>> item=" + str(item)+"< "+str(self.min_range))
+        #             self._episode_done = True
+        #         else:
+        #             rospy.logdebug("NOT done Validation >>> item=" + str(item)+ " ("+str(i) +") < "+str(self.min_range))
 
         return discretized_ranges
         
