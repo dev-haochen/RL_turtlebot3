@@ -213,7 +213,7 @@ class TurtleBot3Env(RobotGazeboEnv):
         
     # Methods that the TrainingEnvironment will need.
     # ----------------------------
-    def move_base(self, linear_speed, angular_speed, running_time=None, epsilon=0.05, update_rate=10):
+    def move_base(self, linear_speed, angular_speed, running_time=None, epsilon=0.05, update_rate=40):
         """
         It will move the base based on the linear and angular speeds given.
         It will wait untill those twists are achived reading from the odometry topic.

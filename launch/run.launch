@@ -1,0 +1,7 @@
+<launch>
+
+    <!-- Load the parameters for the algorithm -->
+
+    <!-- Launch the training system -->
+    <node pkg="turtlebot3_training" name="turtlebot3_gym" type="run_model.py" output="screen"/>
+</launch>
